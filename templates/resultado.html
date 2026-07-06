@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Resultado do Orçamento - Imobiliária R.M{% endblock %}
+
+{% block content %}
+<section class="card resultado-cabecalho">
+    <div>
+        <h2>Orçamento gerado com sucesso</h2>
+        <p>Confira o resumo do cálculo e baixe o arquivo CSV com as 12 parcelas.</p>
+    </div>
+    <a class="botao-secundario" href="{{ url_for('index') }}">Gerar novo orçamento</a>
+</section>
+
+<section class="grid-resumo">
+    <article class="card resumo-box">
+        <span>Cliente</span>
+        <strong>{{ cliente.nome }}</strong>
+    </article>
+    <article class="card resumo-box">
+        <span>Tipo de imóvel</span>
+        <strong>{{ imovel.tipo }}</strong>
+    </article>
+    <article class="card resumo-box">
+        <span>Aluguel mensal</span>
+        <strong>{{ orcamento.aluguel_mensal | moeda }}</strong>
+    </article>
+    <article class="card resumo-box">
+        <span>Total no primeiro ano</span>
+        <strong>{{ orcamento.total_primeiro_ano() | moeda }}</strong>
+    </article>
+</section>
+
+<section class="card">
+    <h3>Composição do aluguel mensal</h3>
+    <div class="tabela-responsiva">
+        <table>
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th class="valor">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                    <tr>
+                        <td>{{ item.descricao }}</td>
+                        <td class="valor {% if item.valor < 0 %}desconto{% endif %}">{{ item.valor | moeda }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>Valor final do aluguel mensal</th>
+                    <th class="valor">{{ orcamento.aluguel_mensal | moeda }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</section>
+
+<section class="card contrato">
+    <h3>Contrato imobiliário</h3>
+    <p>
+        Valor do contrato: <strong>{{ contrato.valor_total | moeda }}</strong> —
+        parcelado em <strong>{{ contrato.parcelas }} parcela(s)</strong> de
+        <strong>{{ contrato.valor_parcela | moeda }}</strong>.
+    </p>
+</section>
+
+<section class="card">
+    <div class="secao-com-acao">
+        <div>
+            <h3>Cronograma de 12 meses</h3>
+            <p>O contrato aparece somente nos primeiros meses, conforme a quantidade de parcelas escolhida.</p>
+        </div>
+        <a class="botao-principal" href="{{ url_for('download_csv', nome_arquivo=nome_arquivo) }}">Baixar CSV</a>
+    </div>
+
+    <div class="tabela-responsiva">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mês</th>
+                    <th class="valor">Aluguel mensal</th>
+                    <th class="valor">Parcela do contrato</th>
+                    <th class="valor">Total do mês</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for linha in cronograma %}
+                    <tr>
+                        <td>{{ linha.mes }}</td>
+                        <td class="valor">{{ linha.aluguel_mensal | moeda }}</td>
+                        <td class="valor">{{ linha.parcela_contrato | moeda }}</td>
+                        <td class="valor"><strong>{{ linha.total_mes | moeda }}</strong></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
