@@ -1,0 +1,48 @@
+@startuml
+title Diagrama de Sequência - Regras por Tipo de Imóvel
+actor Usuário
+boundary Streamlit as View
+control CalculoService as Service
+participant Apartamento
+participant Casa
+participant Estudio
+
+Usuário -> View: solicita cálculo
+View -> Service: processar_orcamento(dados)
+alt Apartamento
+  Service -> Apartamento: calcular_itens(cliente)
+  Apartamento -> Apartamento: base = 700
+  opt 2 quartos
+    Apartamento -> Apartamento: + 200
+  end
+  opt garagem
+    Apartamento -> Apartamento: + 300
+  end
+  opt cliente sem crianças
+    Apartamento -> Apartamento: - 5% do subtotal
+  end
+  Apartamento --> Service: itens e aluguel
+else Casa
+  Service -> Casa: calcular_itens(cliente)
+  Casa -> Casa: base = 900
+  opt 2 quartos
+    Casa -> Casa: + 250
+  end
+  opt garagem
+    Casa -> Casa: + 300
+  end
+  Casa --> Service: itens e aluguel
+else Estúdio
+  Service -> Estudio: calcular_itens(cliente)
+  Estudio -> Estudio: base = 1200
+  opt 2 ou mais vagas
+    Estudio -> Estudio: + 250 pelas duas vagas
+    opt vagas adicionais
+      Estudio -> Estudio: + 60 por vaga adicional
+    end
+  end
+  Estudio --> Service: itens e aluguel
+end
+Service --> View: orçamento calculado
+View --> Usuário: resultado
+@enduml

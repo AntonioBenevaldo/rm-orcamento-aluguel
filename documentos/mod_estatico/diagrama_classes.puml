@@ -1,0 +1,38 @@
+@startuml
+skinparam classAttributeIconSize 0
+abstract class Imovel {
+  +quartos: int
+  +vagas: int
+  +tipo: str
+  +calcular_itens(cliente): List<ItemOrcamento>
+  +calcular_aluguel_mensal(cliente): float
+}
+class Apartamento
+class Casa
+class Estudio
+class Cliente {
+  +nome: str
+  +possui_criancas: bool
+}
+class ItemOrcamento {
+  +descricao: str
+  +valor: float
+}
+class ContratoImobiliario {
+  +parcelas: int
+  +valor_total: float
+  +valor_parcela: float
+}
+class Orcamento {
+  +aluguel_mensal: float
+  +gerar_cronograma_12_meses()
+  +total_primeiro_ano(): float
+}
+Imovel <|-- Apartamento
+Imovel <|-- Casa
+Imovel <|-- Estudio
+Orcamento *-- Cliente
+Orcamento *-- Imovel
+Orcamento *-- ContratoImobiliario
+Imovel ..> ItemOrcamento
+@enduml

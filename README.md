@@ -1,202 +1,111 @@
-# Orçamento de Aluguel - Imobiliária R.M
+# Sistema de Orçamento Imobiliário R.M
 
-Projeto desenvolvido para a disciplina **Algorithmic Thinking & Introduction to Object-Oriented Programming**.
-
-A aplicação gera orçamento mensal de aluguel para **apartamentos**, **casas** e **estúdios**, calcula o contrato imobiliário de **R$ 2.000,00** parcelado em até **5 vezes** e permite exportar um arquivo **CSV com as 12 parcelas** do orçamento.
-
-Esta versão possui duas formas de execução:
-
-1. **Aplicação via terminal**, usando Python puro.
-2. **Interface web**, usando Python, Flask, HTML, CSS e JavaScript.
-
----
+Aplicação acadêmica em Python e Streamlit para calcular, armazenar e exportar orçamentos de apartamentos, casas e estúdios. O projeto demonstra pensamento algorítmico, programação orientada a objetos, arquitetura em camadas, UML e modelagem física SQLite.
 
 ## Funcionalidades
 
-- Cadastro simples do cliente.
-- Escolha do tipo de imóvel: apartamento, casa ou estúdio.
-- Cálculo automático do aluguel mensal conforme as regras de negócio.
-- Acréscimo por segundo quarto em apartamento ou casa.
-- Acréscimo por garagem em apartamento ou casa.
-- Acréscimo por estacionamento em estúdio.
-- Desconto de 5% para apartamento quando o cliente não possui crianças.
-- Cálculo do contrato imobiliário de R$ 2.000,00 em até 5 parcelas.
-- Geração de arquivo `.csv` com 12 meses de orçamento.
-- Interface web com arquivos HTML/CSS.
+- Painel com indicadores e histórico recente.
+- Formulário guiado para apartamento, casa e estúdio.
+- Cálculo de quartos, garagem, estacionamento e desconto.
+- Contrato de R$ 2.000,00 parcelado em até cinco vezes.
+- Cronograma detalhado de 12 meses.
+- Persistência transacional em SQLite.
+- Consulta de detalhes e exportação CSV individual ou consolidada.
+- Testes unitários e de integração do banco físico.
 
----
-
-## Estrutura do projeto
+## Arquitetura
 
 ```text
 rm_orcamento_aluguel/
-├── src/
-│   ├── __init__.py
-│   ├── main.py
-│   ├── imoveis.py
-│   ├── orcamento.py
-│   └── csv_exporter.py
-│
-├── templates/
-│   ├── base.html
-│   ├── index.html
-│   └── resultado.html
-│
-├── static/
-│   ├── css/
-│   │   └── style.css
-│   └── js/
-│       └── formulario.js
-│
-├── docs/
-│   ├── fluxograma.png
-│   ├── fluxograma.mmd
-│   ├── fluxograma.dot
-│   ├── pseudocodigo.txt
-│   ├── instrucoes_interface_web.txt
-│   ├── roteiro_video_pitch.txt
-│   └── roteiro_video_pitch_interface_web.txt
-│
-├── exemplos/
-│   └── orcamento_exemplo.csv
-│
-├── saida_csv/
-│   └── arquivos CSV gerados pela interface web
-│
-├── web_app.py
-├── requirements.txt
-└── README.md
+├── app.py                       # Painel principal Streamlit
+├── pages/                       # Novo, histórico, detalhes e exportação
+├── models/                      # Entidades e regras de domínio
+├── services/                    # Cálculo e exportação
+├── database/
+│   ├── connection.py            # Conexão SQLite
+│   ├── queries.py               # Persistência e consultas
+│   └── schema.sql               # Modelo físico executável
+├── utils/                       # Constantes e formatação
+├── data/                        # imobiliaria.db (gerado em execução)
+├── testes/                      # Testes automatizados
+└── documentos/                 # UML, arquitetura e modelagem de dados
 ```
 
----
+## Instalação e execução
 
-## Como executar pelo terminal
+Abra o PowerShell na pasta do projeto:
 
-Abra o terminal dentro da pasta `src`:
-
-```bash
-cd src
-python main.py
+```powershell
+cd "C:\Users\Benevaldo\Documents\meus-projetos\rm_orcamento_aluguel"
+python -m pip install -r requirements.txt
+python -m streamlit run app.py
 ```
 
-No Windows, caso `python` não funcione, tente:
+A aplicação abrirá em `http://localhost:8501`.
 
-```bash
-py main.py
+> A versão Flask anterior foi preservada em `legacy_flask.py`, mas a entrega oficial usa Streamlit.
+
+## Testes
+
+```powershell
+python -m pytest -q
 ```
 
-Depois responda às perguntas exibidas no terminal.
+Os testes verificam os três exemplos oficiais, o CSV, as 12 parcelas, transações, chaves estrangeiras e integridade física do SQLite.
 
----
+## Regras de negócio
 
-## Como executar a interface web
+| Tipo/regra | Valor |
+|---|---:|
+| Apartamento com um quarto | R$ 700,00 |
+| Segundo quarto do apartamento | + R$ 200,00 |
+| Casa com um quarto | R$ 900,00 |
+| Segundo quarto da casa | + R$ 250,00 |
+| Estúdio | R$ 1.200,00 |
+| Garagem de casa/apartamento | + R$ 300,00 |
+| Duas vagas do estúdio | + R$ 250,00 |
+| Vaga adicional do estúdio | + R$ 60,00 |
+| Apartamento sem crianças | - 5% |
+| Contrato | R$ 2.000,00 em 1 a 5 parcelas |
 
-Abra o terminal na pasta raiz do projeto:
+## Modelo físico
 
-```bash
-cd rm_orcamento_aluguel
-```
-
-Crie um ambiente virtual, se desejar:
-
-```bash
-python -m venv .venv
-```
-
-Ative o ambiente virtual no Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-Instale as dependências:
-
-```bash
-pip install -r requirements.txt
-```
-
-Execute a aplicação web:
-
-```bash
-python web_app.py
-```
-
-Depois abra no navegador:
+O banco utiliza seis tabelas normalizadas:
 
 ```text
-http://127.0.0.1:5000
+clientes ─┐
+imoveis  ─┼──< orcamentos ───< itens_orcamento
+contratos ┘          └────────< parcelas_orcamento
 ```
 
----
+Os valores monetários são gravados como centavos inteiros. O esquema contém `CHECK`, `UNIQUE`, chaves estrangeiras, índices, exclusão em cascata apenas nos detalhes e a visão `vw_orcamentos_resumo`.
 
-## Exemplo de teste
+- Script físico: [`database/schema.sql`](database/schema.sql)
+- Diagrama físico: [`documentos/mod_dados/modelo_fisico.png`](documentos/mod_dados/modelo_fisico.png)
+- Fonte PlantUML: [`documentos/mod_dados/modelo_fisico.puml`](documentos/mod_dados/modelo_fisico.puml)
+- DBML: [`documentos/mod_dados/modelo_dados.dbml`](documentos/mod_dados/modelo_dados.dbml)
 
-Use estes dados na interface web ou no terminal:
+## Diagramas
 
-```text
-Cliente: João
-Possui crianças: Não
-Tipo de imóvel: Apartamento
-Quartos: 2
-Garagem: Sim
-Parcelas do contrato: 5
-```
+- Classes completo: `documentos/mod_estatico/diagrama_classes_completo.png`.
+- Sequência das camadas: `documentos/mod_dinamico/sequencia_camadas.png`.
+- Sequência dos cálculos: `documentos/mod_dinamico/sequencia_calculos.png`.
+- Sequência da exportação: `documentos/mod_dinamico/sequencia_exportacao.png`.
+- Componentes e implantação: `documentos/arquitetura/`.
 
-Resultado esperado:
+Cada diagrama possui versão editável `.puml`, renderização `.png` e versão vetorial `.svg`.
 
-```text
-Apartamento com 1 quarto: R$ 700,00
-Acréscimo por 2 quartos: R$ 200,00
-Garagem: R$ 300,00
-Subtotal: R$ 1.200,00
-Desconto de 5%: R$ 60,00
-Aluguel mensal final: R$ 1.140,00
-Contrato: R$ 2.000,00 em 5 parcelas de R$ 400,00
-Total estimado no primeiro ano: R$ 15.680,00
-```
+## Orientação a objetos
 
----
+- **Abstração:** `Imovel` estabelece o contrato comum.
+- **Herança:** `Apartamento`, `Casa` e `Estudio` derivam de `Imovel`.
+- **Polimorfismo:** cada imóvel calcula seus próprios itens.
+- **Encapsulamento:** invariantes são validadas nos modelos.
+- **Composição:** `Orcamento` agrega cliente, imóvel, contrato, itens e cronograma.
 
-## Orientação a objetos aplicada
+## Documentação acadêmica
 
-O projeto usa classes para separar responsabilidades:
-
-- `Cliente`: armazena os dados do cliente.
-- `ItemOrcamento`: representa cada item de cobrança ou desconto.
-- `Imovel`: classe abstrata base para os tipos de imóveis.
-- `Apartamento`, `Casa` e `Estudio`: especializam as regras de cálculo de cada imóvel.
-- `ContratoImobiliario`: calcula o valor do contrato e suas parcelas.
-- `Orcamento`: reúne cliente, imóvel e contrato para gerar o orçamento completo.
-- `ExportadorCSV`: salva o cronograma de 12 meses em CSV.
-
-Essa organização demonstra os princípios de orientação a objetos, como abstração, especialização por classes e separação de responsabilidades.
-
----
-
-## Parte HTML/CSS
-
-A interface web foi criada para agregar uma camada visual ao projeto.
-
-Arquivos principais:
-
-- `templates/base.html`: estrutura comum das páginas.
-- `templates/index.html`: formulário de entrada dos dados.
-- `templates/resultado.html`: tela com resultado, tabela de cálculo e botão para baixar CSV.
-- `static/css/style.css`: estilos visuais da aplicação.
-- `static/js/formulario.js`: controla campos dinâmicos do formulário.
-
-A regra de negócio continua nos arquivos Python da pasta `src`. Assim, o HTML/CSS cuida da apresentação, enquanto o Python cuida dos cálculos.
-
----
-
-## Arquivos para entrega
-
-- Código-fonte Python: pasta `src`.
-- Interface web HTML/CSS: pastas `templates` e `static`.
-- Aplicação web: `web_app.py`.
-- Dependências: `requirements.txt`.
-- Fluxograma, pseudocódigo e roteiros: pasta `docs`.
-- CSV de exemplo: pasta `exemplos`.
-- CSVs gerados pela interface: pasta `saida_csv`.
-- README explicativo: `README.md`.
-# rm-orcamento-aluguel
+- Modelagem do problema: `documentos/modelagem_problema.md`.
+- Arquitetura detalhada: `documentos/arquitetura/arquitetura_software.md`.
+- Modelo de dados: `documentos/mod_dados/modelagem_problema.md`.
+- Roteiro do pitch: `documentos/roteiro_video_pitch.md`.

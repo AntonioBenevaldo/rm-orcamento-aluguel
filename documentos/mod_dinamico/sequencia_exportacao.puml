@@ -1,0 +1,24 @@
+@startuml
+title Diagrama de Sequência - Exportação CSV
+actor Usuário
+boundary Streamlit as View
+control ExportService as Export
+database SQLite as DB
+participant pandas
+
+Usuário -> View: solicita exportação
+alt orçamento individual em memória
+  View -> Export: gerar_csv(orcamento)
+  Export -> Export: obter cronograma de 12 meses
+else histórico consolidado
+  View -> DB: listar_orcamentos()
+  DB --> View: registros
+  View -> Export: gerar_csv_registros(registros)
+end
+Export -> pandas: DataFrame(dados)
+pandas --> Export: tabela
+Export -> pandas: to_csv(UTF-8, separador ;)
+pandas --> Export: bytes CSV
+Export --> View: arquivo
+View --> Usuário: download
+@enduml

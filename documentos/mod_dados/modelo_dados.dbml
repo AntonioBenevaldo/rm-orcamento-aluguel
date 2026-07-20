@@ -1,0 +1,10 @@
+Project imobiliaria_rm {
+  database_type: 'SQLite'
+  Note: 'Valores monetários persistidos em centavos inteiros.'
+}
+Table clientes { id integer [pk, increment]; nome text [not null]; possui_criancas integer [not null]; criado_em text [not null, default: `CURRENT_TIMESTAMP`] }
+Table imoveis { id integer [pk, increment]; tipo text [not null]; valor_base_centavos integer [not null]; quantidade_quartos integer [not null]; quantidade_vagas integer [not null, default: 0]; criado_em text [not null, default: `CURRENT_TIMESTAMP`] }
+Table contratos { id integer [pk, increment]; valor_total_centavos integer [not null, default: 200000]; quantidade_parcelas integer [not null]; valor_parcela_centavos integer [not null]; criado_em text [not null, default: `CURRENT_TIMESTAMP`] }
+Table orcamentos { id integer [pk, increment]; cliente_id integer [not null, ref: > clientes.id]; imovel_id integer [not null, ref: > imoveis.id]; contrato_id integer [not null, unique, ref: - contratos.id]; aluguel_mensal_centavos integer [not null]; total_primeiro_ano_centavos integer [not null]; status text [not null, default: 'gerado']; criado_em text [not null, default: `CURRENT_TIMESTAMP`] }
+Table itens_orcamento { id integer [pk, increment]; orcamento_id integer [not null, ref: > orcamentos.id]; descricao text [not null]; tipo text [not null]; valor_centavos integer [not null]; ordem integer [not null]; indexes { (orcamento_id, ordem) [unique] } }
+Table parcelas_orcamento { id integer [pk, increment]; orcamento_id integer [not null, ref: > orcamentos.id]; numero_mes integer [not null]; aluguel_centavos integer [not null]; contrato_centavos integer [not null, default: 0]; total_mes_centavos integer [not null]; indexes { (orcamento_id, numero_mes) [unique] } }

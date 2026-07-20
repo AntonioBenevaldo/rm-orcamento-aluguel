@@ -1,0 +1,63 @@
+@startuml
+title Modelo Físico - SQLite - Imobiliária R.M
+hide circle
+skinparam linetype ortho
+entity clientes {
+  * id : INTEGER <<PK>>
+  --
+  * nome : TEXT
+  * possui_criancas : INTEGER
+  * criado_em : TEXT
+}
+entity imoveis {
+  * id : INTEGER <<PK>>
+  --
+  * tipo : TEXT
+  * valor_base_centavos : INTEGER
+  * quantidade_quartos : INTEGER
+  * quantidade_vagas : INTEGER
+  * criado_em : TEXT
+}
+entity contratos {
+  * id : INTEGER <<PK>>
+  --
+  * valor_total_centavos : INTEGER
+  * quantidade_parcelas : INTEGER
+  * valor_parcela_centavos : INTEGER
+  * criado_em : TEXT
+}
+entity orcamentos {
+  * id : INTEGER <<PK>>
+  --
+  * cliente_id : INTEGER <<FK>>
+  * imovel_id : INTEGER <<FK>>
+  * contrato_id : INTEGER <<FK, UQ>>
+  * aluguel_mensal_centavos : INTEGER
+  * total_primeiro_ano_centavos : INTEGER
+  * status : TEXT
+  * criado_em : TEXT
+}
+entity itens_orcamento {
+  * id : INTEGER <<PK>>
+  --
+  * orcamento_id : INTEGER <<FK>>
+  * descricao : TEXT
+  * tipo : TEXT
+  * valor_centavos : INTEGER
+  * ordem : INTEGER
+}
+entity parcelas_orcamento {
+  * id : INTEGER <<PK>>
+  --
+  * orcamento_id : INTEGER <<FK>>
+  * numero_mes : INTEGER
+  * aluguel_centavos : INTEGER
+  * contrato_centavos : INTEGER
+  * total_mes_centavos : INTEGER
+}
+clientes ||--o{ orcamentos
+imoveis ||--o{ orcamentos
+contratos ||--|| orcamentos
+orcamentos ||--|{ itens_orcamento
+orcamentos ||--|{ parcelas_orcamento
+@enduml

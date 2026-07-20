@@ -1,0 +1,27 @@
+@startuml
+title Diagrama de Sequência - Geração e Persistência do Orçamento
+actor Usuário
+boundary "Página Streamlit" as View
+control CalculoService as Service
+entity "Models" as Models
+database "SQLite" as DB
+
+Usuário -> View: preenche formulário e confirma
+View -> Service: processar_orcamento(dados)
+Service -> Models: Cliente(nome, possui_criancas)
+Service -> Models: Imovel específico(quartos, vagas)
+Service -> Models: Contrato(parcelas)
+Service -> Models: Orcamento(cliente, imovel, contrato)
+Models --> Service: orçamento validado
+Service --> View: orçamento
+View -> DB: salvar_orcamento(orcamento)
+activate DB
+DB -> DB: BEGIN TRANSACTION
+DB -> DB: INSERT cliente, imóvel e contrato
+DB -> DB: INSERT orçamento
+DB -> DB: INSERT itens e 12 parcelas
+DB -> DB: COMMIT
+DB --> View: id do orçamento
+deactivate DB
+View --> Usuário: métricas, tabelas e download
+@enduml

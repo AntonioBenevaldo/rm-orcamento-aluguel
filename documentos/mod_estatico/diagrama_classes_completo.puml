@@ -1,0 +1,61 @@
+@startuml
+title Diagrama de Classes - Sistema de Orçamento Imobiliário R.M
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty members
+
+class Cliente <<entity>> {
+  +id: int?
+  +nome: str
+  +possui_criancas: bool
+}
+abstract class Imovel <<abstract>> {
+  +id: int?
+  +quartos: int
+  +vagas: int
+  {abstract} +tipo: str
+  {abstract} +valor_base: float
+  {abstract} +calcular_itens(cliente): List<ItemCalculo>
+  +calcular_aluguel(cliente): float
+}
+class Apartamento
+class Casa
+class Estudio
+class ItemCalculo <<value object>> {
+  +descricao: str
+  +valor: float
+  +tipo: str
+}
+class Contrato <<entity>> {
+  +id: int?
+  +valor_total: float
+  +quantidade_parcelas: int
+  +valor_parcela: float
+}
+class Orcamento <<aggregate root>> {
+  +id: int?
+  +criado_em: datetime?
+  +itens: List<ItemCalculo>
+  +aluguel_mensal: float
+  +total_primeiro_ano: float
+  +cronograma(): List<dict>
+}
+class CalculoService <<service>> {
+  {static} +processar_orcamento(...): Orcamento
+}
+class ExportService <<service>> {
+  {static} +criar_dataframe(orcamento): DataFrame
+  {static} +gerar_csv(orcamento): bytes
+}
+
+Imovel <|-- Apartamento
+Imovel <|-- Casa
+Imovel <|-- Estudio
+Orcamento *-- "1" Cliente
+Orcamento *-- "1" Imovel
+Orcamento *-- "1" Contrato
+Orcamento o-- "1..*" ItemCalculo
+Imovel ..> ItemCalculo : cria
+CalculoService ..> Orcamento : constrói
+ExportService ..> Orcamento : exporta
+@enduml

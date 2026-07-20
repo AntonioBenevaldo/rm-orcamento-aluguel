@@ -1,0 +1,16 @@
+flowchart TD
+    A([Início]) --> B[Preencher dados do cliente]
+    B --> C{Tipo do imóvel}
+    C -->|Apartamento| D[Base 700 + quarto + garagem]
+    D --> E{Sem crianças?}
+    E -->|Sim| F[Aplicar desconto de 5%]
+    E -->|Não| J[Calcular contrato]
+    F --> J
+    C -->|Casa| G[Base 900 + quarto + garagem]
+    G --> J
+    C -->|Estúdio| H[Base 1200 + estacionamento]
+    H --> J
+    J --> K[Gerar cronograma de 12 meses]
+    K --> L[Salvar no SQLite e exportar CSV]
+    L --> M[Exibir resultado]
+    M --> N([Fim])

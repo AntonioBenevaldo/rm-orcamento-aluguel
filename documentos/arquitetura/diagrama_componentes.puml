@@ -1,0 +1,22 @@
+@startuml
+title Diagrama de Componentes - Imobiliária R.M
+skinparam componentStyle rectangle
+actor Usuário
+component "Streamlit\napp.py + pages/" as UI
+component "CalculoService" as Calc
+component "ExportService" as Export
+component "Model Layer\nCliente, Imovel, Contrato, Orcamento" as Model
+component "Database Layer\nconnection.py + queries.py" as Database
+database "SQLite\nimobiliaria.db" as SQLite
+component "pandas / CSV" as CSV
+
+Usuário --> UI
+UI --> Calc
+UI --> Export
+UI --> Database
+Calc --> Model
+Export --> Model
+Export --> CSV
+Database --> Model
+Database --> SQLite
+@enduml

@@ -1,0 +1,16 @@
+@startuml
+title Diagrama de Implantação - Ambiente Acadêmico
+node "Computador / Streamlit Cloud" as Host {
+  node "Python 3.10+" {
+    artifact "Streamlit App" as App
+    artifact "Models + Services" as Core
+    artifact "pandas" as Pandas
+  }
+  database "SQLite\ndata/imobiliaria.db" as DB
+}
+node "Navegador" as Browser
+Browser --> App : HTTPS / localhost:8501
+App --> Core
+App --> Pandas
+App --> DB : sqlite3
+@enduml
