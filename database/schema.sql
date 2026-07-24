@@ -64,11 +64,12 @@ CREATE INDEX IF NOT EXISTS idx_orcamentos_cliente ON orcamentos(cliente_id);
 CREATE INDEX IF NOT EXISTS idx_orcamentos_criado_em ON orcamentos(criado_em);
 CREATE INDEX IF NOT EXISTS idx_parcelas_orcamento ON parcelas_orcamento(orcamento_id);
 
-CREATE VIEW IF NOT EXISTS vw_orcamentos_resumo AS
+DROP VIEW IF EXISTS vw_orcamentos_resumo;
+CREATE VIEW vw_orcamentos_resumo AS
 SELECT o.id, c.nome AS cliente, i.tipo AS imovel,
-       o.aluguel_mensal_centavos / 100.0 AS aluguel_mensal,
+       o.aluguel_mensal_centavos,
        ct.quantidade_parcelas AS parcelas_contrato,
-       o.total_primeiro_ano_centavos / 100.0 AS total_primeiro_ano,
+       o.total_primeiro_ano_centavos,
        o.status, o.criado_em
 FROM orcamentos o
 JOIN clientes c ON c.id = o.cliente_id

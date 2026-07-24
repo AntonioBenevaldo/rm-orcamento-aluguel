@@ -9,8 +9,12 @@ class CalculoService:
                             quartos: int, vagas: int, parcelas: int) -> Orcamento:
         cliente = Cliente(nome, possui_criancas)
         tipo = tipo_imovel.strip().lower()
-        if tipo == "apartamento": imovel = Apartamento(quartos=quartos, vagas=vagas)
-        elif tipo == "casa": imovel = Casa(quartos=quartos, vagas=vagas)
-        elif tipo in {"estudio", "estúdio"}: imovel = Estudio(vagas=vagas)
-        else: raise ValueError("Tipo de imóvel inválido.")
+        if tipo == "apartamento":
+            imovel = Apartamento(quartos=quartos, vagas=vagas)
+        elif tipo == "casa":
+            imovel = Casa(quartos=quartos, vagas=vagas)
+        elif tipo in {"estudio", "estúdio"}:
+            imovel = Estudio(vagas=vagas)
+        else:
+            raise ValueError("Tipo de imóvel inválido.")
         return Orcamento(cliente, imovel, Contrato(parcelas))

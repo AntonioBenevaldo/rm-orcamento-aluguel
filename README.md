@@ -12,6 +12,7 @@ Aplicação acadêmica em Python e Streamlit para calcular, armazenar e exportar
 - Persistência transacional em SQLite.
 - Consulta de detalhes e exportação CSV individual ou consolidada.
 - Testes unitários e de integração do banco físico.
+- Valores monetários representados em centavos inteiros do cálculo ao CSV.
 
 ## Arquitetura
 
@@ -27,7 +28,7 @@ rm_orcamento_aluguel/
 │   └── schema.sql               # Modelo físico executável
 ├── utils/                       # Constantes e formatação
 ├── data/                        # imobiliaria.db (gerado em execução)
-├── testes/                      # Testes automatizados
+├── tests/                       # Testes automatizados
 └── documentos/                 # UML, arquitetura e modelagem de dados
 ```
 
@@ -43,15 +44,15 @@ python -m streamlit run app.py
 
 A aplicação abrirá em `http://localhost:8501`.
 
-> A versão Flask anterior foi preservada em `legacy_flask.py`, mas a entrega oficial usa Streamlit.
-
 ## Testes
 
 ```powershell
 python -m pytest -q
 ```
 
-Os testes verificam os três exemplos oficiais, o CSV, as 12 parcelas, transações, chaves estrangeiras e integridade física do SQLite.
+Os 15 testes verificam os três exemplos oficiais, cálculos em centavos,
+distribuição exata do contrato, CSV, 12 parcelas, reversão de transações,
+chaves estrangeiras, integridade física do SQLite e carregamento da interface.
 
 ## Regras de negócio
 
@@ -79,6 +80,10 @@ contratos ┘          └────────< parcelas_orcamento
 ```
 
 Os valores monetários são gravados como centavos inteiros. O esquema contém `CHECK`, `UNIQUE`, chaves estrangeiras, índices, exclusão em cascata apenas nos detalhes e a visão `vw_orcamentos_resumo`.
+
+O CSV individual possui exatamente 12 registros e as colunas
+`numero_mes`, `aluguel_centavos`, `contrato_centavos` e
+`total_mes_centavos`. Nenhum valor é recalculado durante a exportação.
 
 - Script físico: [`database/schema.sql`](database/schema.sql)
 - Diagrama físico: [`documentos/mod_dados/modelo_fisico.png`](documentos/mod_dados/modelo_fisico.png)

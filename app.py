@@ -16,13 +16,26 @@ indicadores = obter_indicadores()
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Orçamentos", indicadores["quantidade"])
 col2.metric("Clientes", indicadores["clientes"])
-col3.metric("Aluguel médio", moeda_br(indicadores["aluguel_medio"]))
-col4.metric("Valor contratado", moeda_br(indicadores["valor_total"]))
+col3.metric("Aluguel médio", moeda_br(indicadores["aluguel_medio_centavos"]))
+col4.metric("Valor contratado", moeda_br(indicadores["valor_total_centavos"]))
 
 st.subheader("Orçamentos recentes")
 registros = listar_orcamentos(limite=5)
 if registros:
-    st.dataframe(registros, width="stretch", hide_index=True)
+    exibicao = [
+        {
+            "Nº": registro["id"],
+            "Cliente": registro["cliente"],
+            "Imóvel": registro["imovel"].title(),
+            "Aluguel mensal": moeda_br(registro["aluguel_mensal_centavos"]),
+            "Parcelas do contrato": registro["parcelas_contrato"],
+            "Total no primeiro ano": moeda_br(registro["total_primeiro_ano_centavos"]),
+            "Status": registro["status"].title(),
+            "Criado em": registro["criado_em"],
+        }
+        for registro in registros
+    ]
+    st.dataframe(exibicao, width="stretch", hide_index=True)
 else:
     st.info("Nenhum orçamento cadastrado. Acesse **Novo Orçamento** no menu lateral.")
 

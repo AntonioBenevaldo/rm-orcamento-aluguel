@@ -14,30 +14,32 @@ abstract class Imovel <<abstract>> {
   +quartos: int
   +vagas: int
   {abstract} +tipo: str
-  {abstract} +valor_base: float
+  {abstract} +valor_base_centavos: int
   {abstract} +calcular_itens(cliente): List<ItemCalculo>
-  +calcular_aluguel(cliente): float
+  +calcular_aluguel_centavos(cliente): int
 }
 class Apartamento
 class Casa
 class Estudio
 class ItemCalculo <<value object>> {
   +descricao: str
-  +valor: float
+  +valor_centavos: int
   +tipo: str
 }
 class Contrato <<entity>> {
   +id: int?
-  +valor_total: float
+  +valor_total_centavos: int
   +quantidade_parcelas: int
-  +valor_parcela: float
+  +valor_parcela_centavos: int
+  +parcelas_centavos: tuple<int>
+  +valor_parcela_no_mes(mes): int
 }
 class Orcamento <<aggregate root>> {
   +id: int?
   +criado_em: datetime?
   +itens: List<ItemCalculo>
-  +aluguel_mensal: float
-  +total_primeiro_ano: float
+  +aluguel_mensal_centavos: int
+  +total_primeiro_ano_centavos: int
   +cronograma(): List<dict>
 }
 class CalculoService <<service>> {

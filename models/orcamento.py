@@ -15,13 +15,27 @@ class Orcamento:
     criado_em: datetime | None = None
 
     @property
-    def itens(self) -> list[ItemCalculo]: return self.imovel.calcular_itens(self.cliente)
+    def itens(self) -> list[ItemCalculo]:
+        return self.imovel.calcular_itens(self.cliente)
 
     @property
-    def aluguel_mensal(self) -> float: return self.imovel.calcular_aluguel(self.cliente)
+    def aluguel_mensal_centavos(self) -> int:
+        return self.imovel.calcular_aluguel_centavos(self.cliente)
 
     @property
-    def total_primeiro_ano(self) -> float: return round(self.aluguel_mensal * 12 + self.contrato.valor_total, 2)
+    def total_primeiro_ano_centavos(self) -> int:
+        return self.aluguel_mensal_centavos * 12 + self.contrato.valor_total_centavos
 
-    def cronograma(self) -> list[dict]:
-        return [{"mes": mes, "aluguel": self.aluguel_mensal, "contrato": self.contrato.valor_parcela if mes <= self.contrato.quantidade_parcelas else 0.0, "total": round(self.aluguel_mensal + (self.contrato.valor_parcela if mes <= self.contrato.quantidade_parcelas else 0.0), 2)} for mes in range(1, 13)]
+    def cronograma(self) -> list[dict[str, int]]:
+        cronograma = []
+        for numero_mes in range(1, 13):
+            contrato_centavos = self.contrato.valor_parcela_no_mes(numero_mes)
+            cronograma.append(
+                {
+                    "numero_mes": numero_mes,
+                    "aluguel_centavos": self.aluguel_mensal_centavos,
+                    "contrato_centavos": contrato_centavos,
+                    "total_mes_centavos": self.aluguel_mensal_centavos + contrato_centavos,
+                }
+            )
+        return cronograma

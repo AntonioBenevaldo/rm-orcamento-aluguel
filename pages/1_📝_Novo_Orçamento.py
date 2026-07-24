@@ -37,13 +37,32 @@ if calcular:
         st.session_state["ultimo_orcamento"] = orcamento
         st.success(f"Orçamento nº {codigo} salvo com sucesso.")
         a, b, c = st.columns(3)
-        a.metric("Aluguel mensal", moeda_br(orcamento.aluguel_mensal))
-        b.metric("Parcela do contrato", moeda_br(orcamento.contrato.valor_parcela))
-        c.metric("Total no primeiro ano", moeda_br(orcamento.total_primeiro_ano))
+        a.metric("Aluguel mensal", moeda_br(orcamento.aluguel_mensal_centavos))
+        b.metric(
+            "Primeira parcela do contrato",
+            moeda_br(orcamento.contrato.valor_parcela_centavos),
+        )
+        c.metric(
+            "Total no primeiro ano",
+            moeda_br(orcamento.total_primeiro_ano_centavos),
+        )
         st.subheader("Composição")
-        st.dataframe(pd.DataFrame([{"Descrição": i.descricao, "Tipo": i.tipo, "Valor": moeda_br(i.valor)} for i in orcamento.itens]), width="stretch", hide_index=True)
+        st.dataframe(
+            pd.DataFrame(
+                [
+                    {
+                        "Descrição": item.descricao,
+                        "Tipo": item.tipo.title(),
+                        "Valor": moeda_br(item.valor_centavos),
+                    }
+                    for item in orcamento.itens
+                ]
+            ),
+            width="stretch",
+            hide_index=True,
+        )
         st.subheader("Cronograma de 12 meses")
         st.dataframe(ExportService.criar_dataframe(orcamento), width="stretch", hide_index=True)
         st.download_button("⬇️ Baixar CSV deste orçamento", ExportService.gerar_csv(orcamento), f"orcamento_rm_{codigo}.csv", "text/csv", width="stretch")
-    except ValueError as erro:
+    except (TypeError, ValueError) as erro:
         st.error(str(erro))

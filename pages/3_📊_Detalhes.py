@@ -13,6 +13,32 @@ else:
     escolhido = st.selectbox("Orçamento", registros, format_func=lambda x: f"#{x['id']} - {x['cliente']} - {x['imovel'].title()}")
     detalhe = obter_orcamento(escolhido["id"])
     a, b, c = st.columns(3)
-    a.metric("Cliente", detalhe["cliente"]); b.metric("Aluguel", moeda_br(detalhe["aluguel_mensal"])); c.metric("Total anual", moeda_br(detalhe["total_primeiro_ano"]))
-    st.subheader("Itens do cálculo"); st.dataframe(pd.DataFrame(detalhe["itens"]), width="stretch", hide_index=True)
-    st.subheader("Parcelas"); st.dataframe(pd.DataFrame(detalhe["parcelas"]), width="stretch", hide_index=True)
+    a.metric("Cliente", detalhe["cliente"])
+    b.metric("Aluguel", moeda_br(detalhe["aluguel_mensal_centavos"]))
+    c.metric("Total anual", moeda_br(detalhe["total_primeiro_ano_centavos"]))
+
+    itens = pd.DataFrame(
+        [
+            {
+                "Descrição": item["descricao"],
+                "Tipo": item["tipo"].title(),
+                "Valor": moeda_br(item["valor_centavos"]),
+            }
+            for item in detalhe["itens"]
+        ]
+    )
+    parcelas = pd.DataFrame(
+        [
+            {
+                "Mês": parcela["numero_mes"],
+                "Aluguel": moeda_br(parcela["aluguel_centavos"]),
+                "Contrato": moeda_br(parcela["contrato_centavos"]),
+                "Total": moeda_br(parcela["total_mes_centavos"]),
+            }
+            for parcela in detalhe["parcelas"]
+        ]
+    )
+    st.subheader("Itens do cálculo")
+    st.dataframe(itens, width="stretch", hide_index=True)
+    st.subheader("Parcelas")
+    st.dataframe(parcelas, width="stretch", hide_index=True)
