@@ -1,10 +1,14 @@
 # Sistema de Orçamento Imobiliário R.M
 
-Aplicação acadêmica em Python e Streamlit para calcular, armazenar e exportar orçamentos de apartamentos, casas e estúdios. O projeto demonstra pensamento algorítmico, programação orientada a objetos, arquitetura em camadas, UML e modelagem física SQLite.
+Aplicação acadêmica em Python com duas formas de execução - Streamlit e
+terminal - para calcular, armazenar e exportar orçamentos de apartamentos,
+casas e estúdios. As duas interfaces utilizam as mesmas classes, serviços e
+banco SQLite.
 
 ## Funcionalidades
 
 - Painel com indicadores e histórico recente.
+- Aplicação interativa pelo terminal.
 - Formulário guiado para apartamento, casa e estúdio.
 - Cálculo de quartos, garagem, estacionamento e desconto.
 - Contrato de R$ 2.000,00 parcelado em até cinco vezes.
@@ -19,6 +23,7 @@ Aplicação acadêmica em Python e Streamlit para calcular, armazenar e exportar
 ```text
 rm_orcamento_aluguel/
 ├── app.py                       # Painel principal Streamlit
+├── main.py                      # Aplicação interativa no terminal
 ├── pages/                       # Novo, histórico, detalhes e exportação
 ├── models/                      # Entidades e regras de domínio
 ├── services/                    # Cálculo e exportação
@@ -43,6 +48,14 @@ python -m streamlit run app.py
 ```
 
 A aplicação abrirá em `http://localhost:8501`.
+
+### Execução pelo terminal
+
+```powershell
+python main.py
+```
+
+Também é possível clicar duas vezes em `executar_terminal.bat`.
 
 ## Testes
 
