@@ -1,0 +1,53 @@
+@startuml
+abstract class Imovel {
+  +tipo: str
+  +valor_base_centavos: int
+  +quantidade_quartos: int
+  +quantidade_vagas: int
+  +calcular_aluguel_centavos()
+}
+class Apartamento
+class Casa
+class Estudio
+class Cliente {
+  +nome: str
+  +possui_criancas: bool
+}
+class Contrato {
+  +valor_total_centavos: int
+  +quantidade_parcelas: int
+  +valores_parcelas_centavos
+}
+class ItemCalculo {
+  +descricao: str
+  +tipo: str
+  +valor_centavos: int
+  +ordem: int
+}
+class ParcelaOrcamento {
+  +numero_mes: int
+  +aluguel_centavos: int
+  +contrato_centavos: int
+  +total_mes_centavos: int
+}
+class Orcamento {
+  +aluguel_mensal_centavos: int
+  +total_primeiro_ano_centavos: int
+  +status: str
+}
+class CalculoService
+class ExportService
+class OrcamentoRepository
+
+Imovel <|-- Apartamento
+Imovel <|-- Casa
+Imovel <|-- Estudio
+Orcamento *-- Cliente
+Orcamento *-- Imovel
+Orcamento *-- Contrato
+Orcamento *-- "1..*" ItemCalculo
+Orcamento *-- "12" ParcelaOrcamento
+CalculoService --> Orcamento
+ExportService --> ParcelaOrcamento
+OrcamentoRepository --> Orcamento
+@enduml

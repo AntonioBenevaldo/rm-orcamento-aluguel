@@ -1,14 +1,17 @@
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass(slots=True, frozen=True)
 class Cliente:
     nome: str
     possui_criancas: bool
-    id: int | None = None
 
     def __post_init__(self) -> None:
-        nome = self.nome.strip()
-        if len(nome) < 2:
-            raise ValueError("O nome do cliente deve possuir pelo menos dois caracteres.")
-        object.__setattr__(self, "nome", nome)
+        if not isinstance(self.nome, str):
+            raise ValueError("O nome ou identificador do cliente deve ser um texto.")
+        nome_limpo = self.nome.strip()
+        if not nome_limpo:
+            raise ValueError("Informe um nome ou identificador para o cliente.")
+        if not isinstance(self.possui_criancas, bool):
+            raise ValueError("A informação sobre crianças deve ser verdadeira ou falsa.")
+        object.__setattr__(self, "nome", nome_limpo)

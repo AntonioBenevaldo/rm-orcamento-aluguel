@@ -1,0 +1,20 @@
+@startuml
+start
+:Informar cliente, imóvel, quartos, vagas e parcelas;
+if (Dados válidos?) then (Sim)
+  if (Tipo do imóvel?) then (Apartamento)
+    :Aplicar regras de apartamento;
+  elseif (Casa)
+    :Aplicar regras de casa;
+  else (Estúdio)
+    :Aplicar regras de estúdio;
+  endif
+  :Calcular contrato de R$ 2.000,00;
+  :Gerar cronograma de 12 meses;
+  :Salvar orçamento e itens em transação SQLite;
+  :Exibir resultado e disponibilizar CSV;
+else (Não)
+  :Exibir mensagem e corrigir dados;
+endif
+stop
+@enduml

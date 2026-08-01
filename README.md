@@ -1,129 +1,91 @@
 # Sistema de Orçamento Imobiliário R.M
 
-Aplicação acadêmica em Python com duas formas de execução - Streamlit e
-terminal - para calcular, armazenar e exportar orçamentos de apartamentos,
-casas e estúdios. As duas interfaces utilizam as mesmas classes, serviços e
-banco SQLite.
+Aplicação acadêmica em Python e Streamlit para calcular, persistir e exportar orçamentos de locação de apartamentos, casas e estúdios.
 
 ## Funcionalidades
 
-- Painel com indicadores e histórico recente.
-- Aplicação interativa pelo terminal.
-- Formulário guiado para apartamento, casa e estúdio.
-- Cálculo de quartos, garagem, estacionamento e desconto.
-- Contrato de R$ 2.000,00 parcelado em até cinco vezes.
-- Cronograma detalhado de 12 meses.
-- Persistência transacional em SQLite.
-- Consulta de detalhes e exportação CSV individual ou consolidada.
-- Testes unitários e de integração do banco físico.
-- Valores monetários representados em centavos inteiros do cálculo ao CSV.
+- Cálculo do aluguel conforme as regras de cada imóvel.
+- Contrato imobiliário fixo de R$ 2.000,00 em uma a cinco parcelas.
+- Cronograma financeiro de 12 meses.
+- Memória detalhada de acréscimos e desconto.
+- Persistência transacional em seis tabelas SQLite.
+- Consulta dos orçamentos registrados.
+- Exportação CSV em UTF-8 com separador ponto e vírgula.
+- Testes automatizados de domínio, banco, integridade, transação, CSV e interface.
+
+## Regras implementadas
+
+| Imóvel | Regra |
+|---|---|
+| Apartamento | Base R$ 700,00; segundo quarto + R$ 200,00; garagem + R$ 300,00; desconto de 5% quando o cliente não possui crianças. |
+| Casa | Base R$ 900,00; segundo quarto + R$ 250,00; garagem + R$ 300,00. |
+| Estúdio | Base R$ 1.200,00; pacote das duas primeiras vagas + R$ 250,00; cada vaga adicional + R$ 60,00. |
+| Contrato | R$ 2.000,00, parcelável entre uma e cinco vezes. |
+
+A regra do estúdio aceita zero vaga ou pelo menos duas vagas, porque o enunciado não define preço isolado para uma vaga. Quando R$ 2.000,00 não é divisível exatamente pela quantidade de parcelas, os centavos restantes são distribuídos nas primeiras parcelas para preservar o total exato.
 
 ## Arquitetura
 
 ```text
-rm_orcamento_aluguel/
-├── app.py                       # Painel principal Streamlit
-├── main.py                      # Aplicação interativa no terminal
-├── pages/                       # Novo, histórico, detalhes e exportação
-├── models/                      # Entidades e regras de domínio
-├── services/                    # Cálculo e exportação
-├── database/
-│   ├── connection.py            # Conexão SQLite
-│   ├── queries.py               # Persistência e consultas
-│   └── schema.sql               # Modelo físico executável
-├── utils/                       # Constantes e formatação
-├── data/                        # imobiliaria.db (gerado em execução)
-├── tests/                       # Testes automatizados
-└── documentos/                 # UML, arquitetura e modelagem de dados
+app.py / pages/          Interface Streamlit
+services/                Casos de uso e exportação
+models/                  Entidades e regras orientadas a objetos
+database/                SQLite, schema e repositório transacional
+utils/                   Formatação monetária
+tests/                   Testes automatizados
+data/                     Banco criado em tempo de execução
+docs/                     Diagramas PlantUML
 ```
 
-## Instalação e execução
+## Instalação no Windows
 
-Abra o PowerShell na pasta do projeto:
+### Pré-requisitos
+
+- Windows 10 ou 11.
+- Python 3.10 ou superior instalado e disponível no terminal.
+- Conexão com a internet apenas durante a instalação das dependências.
+
+Abra o PowerShell ou o terminal do VS Code na pasta do projeto:
 
 ```powershell
-cd "C:\Users\Benevaldo\Documents\meus-projetos\rm_orcamento_aluguel"
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+```
+
+## Inicialização simplificada no Windows
+
+Também foram incluídos três arquivos de apoio:
+
+1. `INSTALAR.bat` - cria o ambiente virtual e instala as dependências.
+2. `INICIAR_SISTEMA.bat` - inicia a aplicação Streamlit.
+3. `EXECUTAR_TESTES.bat` - executa a suíte de testes.
+
+Na primeira utilização, execute `INSTALAR.bat`. Depois, utilize `INICIAR_SISTEMA.bat`.
+
+## Executar os testes
+
+```powershell
+python -m pytest -v
+```
+
+## Executar a aplicação
+
+```powershell
 python -m streamlit run app.py
 ```
 
-A aplicação abrirá em `http://localhost:8501`.
+O terminal exibirá o endereço local, normalmente `http://localhost:8501`.
 
-### Execução pelo terminal
+## Banco de dados
 
-```powershell
-python main.py
-```
+O arquivo `data/imobiliaria.db` é criado automaticamente. Valores monetários são gravados como `INTEGER` em centavos. A operação de gravação é atômica: se qualquer item ou parcela falhar, o orçamento inteiro é revertido.
 
-Também é possível clicar duas vezes em `executar_terminal.bat`.
+## Documentação técnica
 
-## Testes
+O diretório `docs/` contém o diagrama de classes, o modelo de dados e o fluxograma em formato PlantUML (`.puml`). Esses arquivos podem ser abertos no VS Code com uma extensão compatível com PlantUML ou renderizados pela ferramenta PlantUML.
 
-```powershell
-python -m pytest -q
-```
+## Privacidade
 
-Os 15 testes verificam os três exemplos oficiais, cálculos em centavos,
-distribuição exata do contrato, CSV, 12 parcelas, reversão de transações,
-chaves estrangeiras, integridade física do SQLite e carregamento da interface.
-
-## Regras de negócio
-
-| Tipo/regra | Valor |
-|---|---:|
-| Apartamento com um quarto | R$ 700,00 |
-| Segundo quarto do apartamento | + R$ 200,00 |
-| Casa com um quarto | R$ 900,00 |
-| Segundo quarto da casa | + R$ 250,00 |
-| Estúdio | R$ 1.200,00 |
-| Garagem de casa/apartamento | + R$ 300,00 |
-| Duas vagas do estúdio | + R$ 250,00 |
-| Vaga adicional do estúdio | + R$ 60,00 |
-| Apartamento sem crianças | - 5% |
-| Contrato | R$ 2.000,00 em 1 a 5 parcelas |
-
-## Modelo físico
-
-O banco utiliza seis tabelas normalizadas:
-
-```text
-clientes ─┐
-imoveis  ─┼──< orcamentos ───< itens_orcamento
-contratos ┘          └────────< parcelas_orcamento
-```
-
-Os valores monetários são gravados como centavos inteiros. O esquema contém `CHECK`, `UNIQUE`, chaves estrangeiras, índices, exclusão em cascata apenas nos detalhes e a visão `vw_orcamentos_resumo`.
-
-O CSV individual possui exatamente 12 registros e as colunas
-`numero_mes`, `aluguel_centavos`, `contrato_centavos` e
-`total_mes_centavos`. Nenhum valor é recalculado durante a exportação.
-
-- Script físico: [`database/schema.sql`](database/schema.sql)
-- Diagrama físico: [`documentos/mod_dados/modelo_fisico.png`](documentos/mod_dados/modelo_fisico.png)
-- Fonte PlantUML: [`documentos/mod_dados/modelo_fisico.puml`](documentos/mod_dados/modelo_fisico.puml)
-- DBML: [`documentos/mod_dados/modelo_dados.dbml`](documentos/mod_dados/modelo_dados.dbml)
-
-## Diagramas
-
-- Classes completo: `documentos/mod_estatico/diagrama_classes_completo.png`.
-- Sequência das camadas: `documentos/mod_dinamico/sequencia_camadas.png`.
-- Sequência dos cálculos: `documentos/mod_dinamico/sequencia_calculos.png`.
-- Sequência da exportação: `documentos/mod_dinamico/sequencia_exportacao.png`.
-- Componentes e implantação: `documentos/arquitetura/`.
-
-Cada diagrama possui versão editável `.puml`, renderização `.png` e versão vetorial `.svg`.
-
-## Orientação a objetos
-
-- **Abstração:** `Imovel` estabelece o contrato comum.
-- **Herança:** `Apartamento`, `Casa` e `Estudio` derivam de `Imovel`.
-- **Polimorfismo:** cada imóvel calcula seus próprios itens.
-- **Encapsulamento:** invariantes são validadas nos modelos.
-- **Composição:** `Orcamento` agrega cliente, imóvel, contrato, itens e cronograma.
-
-## Documentação acadêmica
-
-- Modelagem do problema: `documentos/modelagem_problema.md`.
-- Arquitetura detalhada: `documentos/arquitetura/arquitetura_software.md`.
-- Modelo de dados: `documentos/mod_dados/modelagem_problema.md`.
-- Roteiro do pitch: `documentos/roteiro_video_pitch.md`.
+Utilize somente dados fictícios na demonstração, nas capturas e no vídeo. O banco local está ignorado pelo Git para evitar publicação acidental de registros.

@@ -1,32 +1,37 @@
+from collections.abc import Iterable
+from io import StringIO
+
 import pandas as pd
 
-from models import Orcamento
-from utils import moeda_br
+from models import ParcelaOrcamento
 
 
 class ExportService:
-    @staticmethod
-    def criar_dataframe(orcamento: Orcamento) -> pd.DataFrame:
-        """Cria a tabela exibida na interface, formatada em reais."""
-        linhas = [
-            {
-                "Mês": linha["numero_mes"],
-                "Aluguel": moeda_br(linha["aluguel_centavos"]),
-                "Parcela do contrato": moeda_br(linha["contrato_centavos"]),
-                "Total do mês": moeda_br(linha["total_mes_centavos"]),
-            }
-            for linha in orcamento.cronograma()
-        ]
-        return pd.DataFrame(linhas)
+    COLUNAS = ["numero_mes", "aluguel_centavos", "contrato_centavos", "total_mes_centavos"]
 
     @classmethod
-    def gerar_csv(cls, orcamento: Orcamento) -> bytes:
-        """Exporta os valores exatos em centavos, sem recalcular o orçamento."""
-        dataframe = pd.DataFrame(orcamento.cronograma())
-        texto = dataframe.to_csv(index=False, sep=";", encoding="utf-8")
-        return texto.encode("utf-8-sig")
+    def criar_dataframe(cls, parcelas: Iterable[ParcelaOrcamento | dict]) -> pd.DataFrame:
+        registros = []
+        for parcela in parcelas:
+            if isinstance(parcela, dict):
+                registros.append({coluna: int(parcela[coluna]) for coluna in cls.COLUNAS})
+            else:
+                registros.append(
+                    {
+                        "numero_mes": parcela.numero_mes,
+                        "aluguel_centavos": parcela.aluguel_centavos,
+                        "contrato_centavos": parcela.contrato_centavos,
+                        "total_mes_centavos": parcela.total_mes_centavos,
+                    }
+                )
+        dataframe = pd.DataFrame(registros, columns=cls.COLUNAS)
+        if len(dataframe) != 12:
+            raise ValueError("A exportação exige exatamente 12 registros mensais.")
+        return dataframe
 
-    @staticmethod
-    def gerar_csv_registros(registros: list[dict]) -> bytes:
-        texto = pd.DataFrame(registros).to_csv(index=False, sep=";", encoding="utf-8")
-        return texto.encode("utf-8-sig")
+    @classmethod
+    def gerar_csv_bytes(cls, parcelas: Iterable[ParcelaOrcamento | dict]) -> bytes:
+        dataframe = cls.criar_dataframe(parcelas)
+        buffer = StringIO()
+        dataframe.to_csv(buffer, index=False, sep=";", lineterminator="\n")
+        return ("﻿" + buffer.getvalue()).encode("utf-8")

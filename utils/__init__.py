@@ -1,3 +1,1 @@
-from .formatters import moeda_br
-
-__all__ = ["moeda_br"]
+"""Utilitários compartilhados do sistema."""

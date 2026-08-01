@@ -1,70 +1,112 @@
 import pytest
 
-from models import Apartamento, Casa, Cliente, Contrato, Estudio
-from services import CalculoService
+
+def test_apartamento_completo_sem_criancas(calculo_service):
+    orcamento = calculo_service.criar_orcamento(
+        nome_cliente="Cliente Teste",
+        possui_criancas=False,
+        tipo_imovel="Apartamento",
+        quantidade_quartos=2,
+        quantidade_vagas=1,
+        parcelas_contrato=5,
+    )
+    assert orcamento.aluguel_mensal_centavos == 114_000
+
+
+def test_casa_com_dois_quartos_e_garagem(calculo_service):
+    orcamento = calculo_service.criar_orcamento(
+        nome_cliente="Cliente Teste",
+        possui_criancas=False,
+        tipo_imovel="Casa",
+        quantidade_quartos=2,
+        quantidade_vagas=1,
+        parcelas_contrato=5,
+    )
+    assert orcamento.aluguel_mensal_centavos == 145_000
+
+
+def test_estudio_com_quatro_vagas(calculo_service):
+    orcamento = calculo_service.criar_orcamento(
+        nome_cliente="Cliente Teste",
+        possui_criancas=True,
+        tipo_imovel="Estúdio",
+        quantidade_quartos=0,
+        quantidade_vagas=4,
+        parcelas_contrato=5,
+    )
+    assert orcamento.aluguel_mensal_centavos == 157_000
+
+
+def test_contrato_em_cinco_parcelas(calculo_service):
+    orcamento = calculo_service.criar_orcamento(
+        nome_cliente="Cliente Teste",
+        possui_criancas=False,
+        tipo_imovel="Apartamento",
+        quantidade_quartos=2,
+        quantidade_vagas=1,
+        parcelas_contrato=5,
+    )
+    assert [p.contrato_centavos for p in orcamento.parcelas[:5]] == [40_000] * 5
+    assert sum(p.contrato_centavos for p in orcamento.parcelas) == 200_000
+
+
+def test_cronograma_anual_tem_doze_meses(calculo_service):
+    orcamento = calculo_service.criar_orcamento(
+        nome_cliente="Cliente Teste",
+        possui_criancas=False,
+        tipo_imovel="Apartamento",
+        quantidade_quartos=2,
+        quantidade_vagas=1,
+        parcelas_contrato=5,
+    )
+    assert len(orcamento.parcelas) == 12
+    assert orcamento.total_primeiro_ano_centavos == 1_568_000
+
+
+def test_estudio_rejeita_uma_vaga(calculo_service):
+    with pytest.raises(ValueError, match="zero vaga ou pelo menos duas"):
+        calculo_service.criar_orcamento(
+            nome_cliente="Cliente Teste",
+            possui_criancas=True,
+            tipo_imovel="Estúdio",
+            quantidade_quartos=0,
+            quantidade_vagas=1,
+            parcelas_contrato=5,
+        )
+
+
+def test_contrato_em_tres_parcelas_preserva_total(calculo_service):
+    orcamento = calculo_service.criar_orcamento(
+        nome_cliente="Cliente Teste",
+        possui_criancas=True,
+        tipo_imovel="Casa",
+        quantidade_quartos=1,
+        quantidade_vagas=0,
+        parcelas_contrato=3,
+    )
+    assert [p.contrato_centavos for p in orcamento.parcelas[:3]] == [66_667, 66_667, 66_666]
+    assert sum(p.contrato_centavos for p in orcamento.parcelas) == 200_000
 
 
 @pytest.mark.parametrize(
-    ("tipo", "possui_criancas", "quartos", "vagas", "parcelas", "esperado"),
+    "campo, valor, mensagem",
     [
-        ("Apartamento", False, 2, 1, 5, 114_000),
-        ("Casa", True, 2, 1, 4, 145_000),
-        ("Estúdio", False, 1, 4, 2, 157_000),
+        ("tipo_imovel", None, "Selecione apartamento, casa ou estúdio"),
+        ("quantidade_quartos", 1.5, "quantidade de quartos deve ser um número inteiro"),
+        ("quantidade_vagas", True, "quantidade de vagas deve ser um número inteiro"),
+        ("parcelas_contrato", 2.5, "quantidade de parcelas deve ser um número inteiro"),
     ],
 )
-def test_cenarios_oficiais_em_centavos(
-    tipo, possui_criancas, quartos, vagas, parcelas, esperado
-):
-    orcamento = CalculoService.processar_orcamento(
-        "Cliente Teste",
-        possui_criancas,
-        tipo,
-        quartos,
-        vagas,
-        parcelas,
-    )
-    assert orcamento.aluguel_mensal_centavos == esperado
-    assert orcamento.total_primeiro_ano_centavos == esperado * 12 + 200_000
+def test_rejeita_tipos_de_entrada_invalidos(calculo_service, campo, valor, mensagem):
+    dados = {
+        "nome_cliente": "Cliente Teste",
+        "possui_criancas": False,
+        "tipo_imovel": "Apartamento",
+        "quantidade_quartos": 1,
+        "quantidade_vagas": 0,
+        "parcelas_contrato": 5,
+    }
+    dados[campo] = valor
 
-
-def test_desconto_aplica_somente_ao_apartamento_sem_criancas():
-    sem_criancas = Cliente("Ana Teste", False)
-    com_criancas = Cliente("Bruno Teste", True)
-    apartamento = Apartamento(quartos=1, vagas=0)
-    casa = Casa(quartos=1, vagas=0)
-
-    assert apartamento.calcular_aluguel_centavos(sem_criancas) == 66_500
-    assert apartamento.calcular_aluguel_centavos(com_criancas) == 70_000
-    assert casa.calcular_aluguel_centavos(sem_criancas) == 90_000
-
-
-def test_estudio_rejeita_uma_vaga():
-    with pytest.raises(ValueError, match="zero vagas ou, no mínimo, duas"):
-        Estudio(vagas=1)
-
-
-@pytest.mark.parametrize("parcelas", [0, 6])
-def test_contrato_rejeita_parcelamento_fora_do_limite(parcelas):
-    with pytest.raises(ValueError, match="entre uma e cinco"):
-        Contrato(parcelas)
-
-
-def test_contrato_distribui_restos_de_centavos_sem_perder_valor():
-    contrato = Contrato(3)
-    assert contrato.parcelas_centavos == (66_667, 66_667, 66_666)
-    assert sum(contrato.parcelas_centavos) == 200_000
-
-
-def test_cronograma_tem_doze_meses_e_contrato_exato():
-    orcamento = CalculoService.processar_orcamento(
-        "Cliente Teste", True, "Casa", 1, 0, 3
-    )
-    cronograma = orcamento.cronograma()
-
-    assert len(cronograma) == 12
-    assert [linha["numero_mes"] for linha in cronograma] == list(range(1, 13))
-    assert sum(linha["contrato_centavos"] for linha in cronograma) == 200_000
-    assert all(linha["contrato_centavos"] == 0 for linha in cronograma[3:])
-    assert sum(linha["total_mes_centavos"] for linha in cronograma) == (
-        orcamento.total_primeiro_ano_centavos
-    )
+    with pytest.raises(ValueError, match=mensagem):
+        calculo_service.criar_orcamento(**dados)
